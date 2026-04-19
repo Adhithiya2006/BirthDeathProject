@@ -66,14 +66,6 @@ mysql = MySQL(app)
 if MAIL_AVAILABLE:
     mail = Mail(app)
 
-
-
-
-
-mysql = MySQL(app)
-if MAIL_AVAILABLE:
-    mail = Mail(app)
-
 # ══════════════════════════════════════════════════════════════
 # HELPERS
 # ══════════════════════════════════════════════════════════════
