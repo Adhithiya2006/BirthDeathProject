@@ -34,6 +34,7 @@
     <div class="stat"><div class="stat-num">{{ users|selectattr('role','eq','citizen')|list|length }}</div><div class="stat-lbl">Citizens</div></div>
     <div class="stat green"><div class="stat-num">{{ users|selectattr('role','eq','officer')|list|length }}</div><div class="stat-lbl">Officers</div></div>
     <div class="stat navy"><div class="stat-num">{{ users|selectattr('role','eq','admin')|list|length }}</div><div class="stat-lbl">Admins</div></div>
+    <div class="stat"><div class="stat-num">{{ users|selectattr('role','eq','hospital')|list|length }}</div><div class="stat-lbl">Hospitals</div></div>
   </div>
 
   <div class="card">
@@ -68,7 +69,7 @@
                 {% if u.id != session.user_id %}
                 <form method="POST" action="{{ url_for('change_role', uid=u.id) }}">
                   <select name="role" class="fc" style="padding:4px 8px;font-size:12px;width:auto;" onchange="this.form.submit()">
-                    {% for r in ['citizen','officer','admin'] %}
+                    {% for r in ['citizen','officer','admin','hospital'] %}
                     <option value="{{ r }}" {{ 'selected' if u.role==r }}>{{ r }}</option>
                     {% endfor %}
                   </select>
@@ -116,6 +117,7 @@
           <select name="role" class="fc" required>
             <option value="officer">Officer</option>
             <option value="admin">Admin</option>
+            <option value="hospital">Hospital</option>
           </select>
         </div>
       </div>

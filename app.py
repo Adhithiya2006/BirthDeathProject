@@ -5,6 +5,8 @@ Verification Messages, Admin Approve/Reject, PDF Certificates,
 Email Notifications, Forgot/Reset Password, Public Certificate Download
 """
 import os, random, string, io, uuid
+import pymysql
+pymysql.install_as_MySQLdb()
 from datetime import datetime
 from functools import wraps
 

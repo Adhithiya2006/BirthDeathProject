@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS users (
     email       VARCHAR(150) NOT NULL UNIQUE,
     phone       VARCHAR(10)  NOT NULL,
     password    VARCHAR(255) NOT NULL,
-    role        ENUM('citizen','officer','admin') NOT NULL DEFAULT 'citizen',
+    role        ENUM('citizen','officer','admin','hospital') NOT NULL DEFAULT 'citizen',
     is_active   TINYINT(1) NOT NULL DEFAULT 1,
     created_at  DATETIME DEFAULT CURRENT_TIMESTAMP
 );
@@ -37,6 +37,12 @@ CREATE TABLE IF NOT EXISTS birth_registration (
     verification_note   TEXT DEFAULT NULL,
     verified_by         INT DEFAULT NULL,
     verified_at         DATETIME DEFAULT NULL,
+    assigned_hospital_id INT DEFAULT NULL,
+    hospital_status     ENUM('Not Assigned','Assigned','Hospital Approved','Hospital Rejected') DEFAULT 'Not Assigned',
+    hospital_remarks    TEXT DEFAULT NULL,
+    hospital_assigned_at DATETIME DEFAULT NULL,
+    hospital_reviewed_at DATETIME DEFAULT NULL,
+    workflow_stage      ENUM('Submitted','Sent to Hospital','Hospital Approved','Hospital Rejected','Admin Final') DEFAULT 'Submitted',
     approved_by         INT DEFAULT NULL,
     approved_at         DATETIME DEFAULT NULL,
     rejection_reason    VARCHAR(500) DEFAULT NULL,
@@ -45,7 +51,8 @@ CREATE TABLE IF NOT EXISTS birth_registration (
     updated_at          DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id)     REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (approved_by) REFERENCES users(id) ON DELETE SET NULL,
-    FOREIGN KEY (verified_by) REFERENCES users(id) ON DELETE SET NULL
+    FOREIGN KEY (verified_by) REFERENCES users(id) ON DELETE SET NULL,
+    FOREIGN KEY (assigned_hospital_id) REFERENCES users(id) ON DELETE SET NULL
 );
 
 CREATE TABLE IF NOT EXISTS death_registration (
@@ -73,6 +80,12 @@ CREATE TABLE IF NOT EXISTS death_registration (
     verification_note   TEXT DEFAULT NULL,
     verified_by         INT DEFAULT NULL,
     verified_at         DATETIME DEFAULT NULL,
+    assigned_hospital_id INT DEFAULT NULL,
+    hospital_status     ENUM('Not Assigned','Assigned','Hospital Approved','Hospital Rejected') DEFAULT 'Not Assigned',
+    hospital_remarks    TEXT DEFAULT NULL,
+    hospital_assigned_at DATETIME DEFAULT NULL,
+    hospital_reviewed_at DATETIME DEFAULT NULL,
+    workflow_stage      ENUM('Submitted','Sent to Hospital','Hospital Approved','Hospital Rejected','Admin Final') DEFAULT 'Submitted',
     approved_by         INT DEFAULT NULL,
     approved_at         DATETIME DEFAULT NULL,
     rejection_reason    VARCHAR(500) DEFAULT NULL,
@@ -81,7 +94,8 @@ CREATE TABLE IF NOT EXISTS death_registration (
     updated_at          DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id)     REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (approved_by) REFERENCES users(id) ON DELETE SET NULL,
-    FOREIGN KEY (verified_by) REFERENCES users(id) ON DELETE SET NULL
+    FOREIGN KEY (verified_by) REFERENCES users(id) ON DELETE SET NULL,
+    FOREIGN KEY (assigned_hospital_id) REFERENCES users(id) ON DELETE SET NULL
 );
 
 CREATE TABLE IF NOT EXISTS verification_messages (
@@ -123,3 +137,24 @@ CREATE TABLE IF NOT EXISTS audit_log (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );
+
+-- Existing database upgrade helpers.
+-- Safe to run on MySQL 8+ if your database was created before hospital workflow support.
+ALTER TABLE users
+    MODIFY role ENUM('citizen','officer','admin','hospital') NOT NULL DEFAULT 'citizen';
+
+ALTER TABLE birth_registration
+    ADD COLUMN IF NOT EXISTS assigned_hospital_id INT DEFAULT NULL,
+    ADD COLUMN IF NOT EXISTS hospital_status ENUM('Not Assigned','Assigned','Hospital Approved','Hospital Rejected') DEFAULT 'Not Assigned',
+    ADD COLUMN IF NOT EXISTS hospital_remarks TEXT DEFAULT NULL,
+    ADD COLUMN IF NOT EXISTS hospital_assigned_at DATETIME DEFAULT NULL,
+    ADD COLUMN IF NOT EXISTS hospital_reviewed_at DATETIME DEFAULT NULL,
+    ADD COLUMN IF NOT EXISTS workflow_stage ENUM('Submitted','Sent to Hospital','Hospital Approved','Hospital Rejected','Admin Final') DEFAULT 'Submitted';
+
+ALTER TABLE death_registration
+    ADD COLUMN IF NOT EXISTS assigned_hospital_id INT DEFAULT NULL,
+    ADD COLUMN IF NOT EXISTS hospital_status ENUM('Not Assigned','Assigned','Hospital Approved','Hospital Rejected') DEFAULT 'Not Assigned',
+    ADD COLUMN IF NOT EXISTS hospital_remarks TEXT DEFAULT NULL,
+    ADD COLUMN IF NOT EXISTS hospital_assigned_at DATETIME DEFAULT NULL,
+    ADD COLUMN IF NOT EXISTS hospital_reviewed_at DATETIME DEFAULT NULL,
+    ADD COLUMN IF NOT EXISTS workflow_stage ENUM('Submitted','Sent to Hospital','Hospital Approved','Hospital Rejected','Admin Final') DEFAULT 'Submitted';
