@@ -1,8 +1,8 @@
-Flask==3.0.3
-PyMySQL==1.1.1
+Flask==2.3.3
 Flask-MySQLdb==1.0.1
-Werkzeug==3.0.3
-flask-mail==0.10.0
+PyMySQL==1.1.1
+Werkzeug==2.3.7
+flask-mail==0.9.1
 reportlab==4.2.2
 qrcode==7.4.2
 Pillow==10.3.0
