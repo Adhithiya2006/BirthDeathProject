@@ -1112,6 +1112,13 @@ def admin_edit_death(rid):
 
 
 
-
+@app.route('/setup-admin-temp')
+def setup_admin():
+    cur = mysql.connection.cursor()
+    hashed = generate_password_hash('Admin@123')
+    cur.execute("UPDATE users SET password=%s WHERE email=%s", (hashed, 'gbadithya67@gmail.com'))
+    mysql.connection.commit()
+    cur.close()
+    return 'Admin password updated successfully!'
 if __name__ == '__main__':
     app.run(debug=False)
