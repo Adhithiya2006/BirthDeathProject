@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+{% block title %}Edit Death #{{ record.id }}{% endblock %}
+
+{% block navbar %}
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/" class="brand" style="text-decoration:none;">
+      <div class="brand-logo">⚖</div>
+      <div class="brand-name"><strong>Civil Registry</strong><span>Admin Panel</span></div>
+    </a>
+    <div class="nav-links">
+      <a href="{{ url_for('admin_dashboard') }}">Dashboard</a>
+      <a href="{{ url_for('admin_users') }}">Manage Users</a>
+      <a href="{{ url_for('logout') }}" class="nav-logout">Logout</a>
+    </div>
+  </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-hero">
+  <div class="page-hero-inner">
+    <div>
+      <h1>Edit Death Registration — #{{ record.id }}</h1>
+      <p>Modify details for {{ record.deceased_name }} — changes are saved immediately</p>
+    </div>
+    <a href="{{ url_for('admin_view_death', rid=record.id) }}" class="btn btn-ghost-white">← Back to Record</a>
+  </div>
+</div>
+
+<div class="wrap-narrow" style="padding-top:0;">
+  <form method="POST" enctype="multipart/form-data">
+
+    <div class="form-block">
+      <div class="form-block-head">📋 Deceased Person's Details</div>
+      <div class="form-block-body">
+        <div class="fgrid" style="margin-bottom:18px;">
+          <div class="fg">
+            <label>Deceased's Full Name <span class="req">*</span></label>
+            <input type="text" name="deceased_name" class="fc" value="{{ record.deceased_name }}" required>
+          </div>
+          <div class="fg">
+            <label>Gender <span class="req">*</span></label>
+            <select name="gender" class="fc" required>
+              {% for g in ['Male','Female','Other'] %}
+              <option value="{{ g }}" {{ 'selected' if record.gender==g }}>{{ g }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="fgrid" style="margin-bottom:18px;">
+          <div class="fg">
+            <label>Date of Death <span class="req">*</span></label>
+            <input type="date" name="dod" class="fc" value="{{ record.date_of_death }}" required>
+          </div>
+          <div class="fg">
+            <label>Place of Death <span class="req">*</span></label>
+            <input type="text" name="place" class="fc" value="{{ record.place_of_death }}" required>
+          </div>
+        </div>
+        <div class="fg">
+          <label>Cause of Death <span class="req">*</span></label>
+          <input type="text" name="cause" class="fc" value="{{ record.cause_of_death }}" required>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-block">
+      <div class="form-block-head">👨‍👩‍👧 Family Information</div>
+      <div class="form-block-body">
+        <div class="fgrid" style="margin-bottom:18px;">
+          <div class="fg">
+            <label>Father's Name <span class="req">*</span></label>
+            <input type="text" name="father" class="fc" value="{{ record.father_name }}" required>
+          </div>
+          <div class="fg">
+            <label>Mother's Name <span class="req">*</span></label>
+            <input type="text" name="mother" class="fc" value="{{ record.mother_name }}" required>
+          </div>
+        </div>
+        <div class="fgrid" style="margin-bottom:18px;">
+          <div class="fg">
+            <label>Spouse's Name <em style="font-size:11px;color:var(--muted);font-style:normal;">(optional)</em></label>
+            <input type="text" name="spouse" class="fc" value="{{ record.spouse_name or '' }}">
+          </div>
+          <div class="fg"></div>
+        </div>
+        <div class="fg">
+          <label>Permanent Address <span class="req">*</span></label>
+          <textarea name="address" class="fc" required>{{ record.address }}</textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-block">
+      <div class="form-block-head">🧾 Informant Details</div>
+      <div class="form-block-body">
+        <div class="fgrid">
+          <div class="fg">
+            <label>Informant's Name <span class="req">*</span></label>
+            <input type="text" name="informant_name" class="fc" value="{{ record.informant_name }}" required>
+          </div>
+          <div class="fg">
+            <label>Relation to Deceased <span class="req">*</span></label>
+            <input type="text" name="informant_relation" class="fc" value="{{ record.informant_relation }}" required>
+          </div>
+        </div>
+      </div>
+    </div>
+        {% if record.proof_filename %}
+        <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:12px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px;">
+          <span style="font-size:20px;">📄</span>
+          <div>
+            <div style="font-weight:600;color:var(--teal);">{{ record.proof_original_name }}</div>
+            <div style="font-size:12px;color:var(--muted);">Current document — upload new to replace</div>
+          </div>
+        </div>
+        {% endif %}
+        <div class="fg">
+          <label>Replace Proof Document <span style="font-size:11px;color:var(--muted);font-weight:400;">(leave blank to keep existing)</span></label>
+          <input type="file" name="proof_doc" class="fc" accept=".pdf,.jpg,.jpeg,.png">
+        </div>
+      </div>
+    </div>
+
+    <div class="form-block">
+      <div class="form-block-head">📧 Contact Details</div>
+      <div class="form-block-body">
+        <div class="fgrid">
+          <div class="fg">
+            <label>Contact Email <span class="req">*</span></label>
+            <input type="email" name="contact_email" class="fc" value="{{ record.contact_email or '' }}" required>
+          </div>
+          <div class="fg">
+            <label>Contact Phone <span class="req">*</span></label>
+            <input type="tel" name="contact_phone" class="fc" value="{{ record.contact_phone or '' }}" pattern="[0-9]{10}" maxlength="10" required>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:12px;margin-bottom:48px;">
+      <button type="submit" class="btn btn-navy">💾 Save Changes</button>
+      <a href="{{ url_for('admin_view_death', rid=record.id) }}" class="btn btn-ghost">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

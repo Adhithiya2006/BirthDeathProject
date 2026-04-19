@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Civil Registry{% endblock %} | Tamil Nadu</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% block head %}{% endblock %}
+</head>
+<body>
+
+{% block navbar %}
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/" class="brand" style="text-decoration:none;">
+      <div class="brand-logo">⚖</div>
+      <div class="brand-name">
+        <strong>Civil Registry</strong>
+        <span>Government of Tamil Nadu</span>
+      </div>
+    </a>
+    {% if session.get('user_id') %}
+    <div class="nav-links">
+      {% if session.get('role') in ['admin','officer'] %}
+        <a href="{{ url_for('admin_dashboard') }}" class="{{ 'active' if request.endpoint == 'admin_dashboard' else '' }}">Admin Panel</a>
+      {% else %}
+        <a href="{{ url_for('dashboard') }}" class="{{ 'active' if request.endpoint == 'dashboard' else '' }}">Dashboard</a>
+        <a href="{{ url_for('birth') }}" class="{{ 'active' if 'birth' in request.endpoint else '' }}">Birth Reg.</a>
+        <a href="{{ url_for('death') }}" class="{{ 'active' if 'death' in request.endpoint else '' }}">Death Reg.</a>
+      {% endif %}
+      <a href="{{ url_for('logout') }}" class="nav-logout">Logout</a>
+    </div>
+    {% endif %}
+  </div>
+</nav>
+{% endblock %}
+
+<div class="flash-zone">
+  {% for cat, msg in get_flashed_messages(with_categories=True) %}
+  <div class="alert alert-{{ cat }}">
+    {% if cat == 'success' %}✓{% elif cat == 'danger' %}✕{% elif cat == 'warning' %}⚠{% else %}ℹ{% endif %}
+    {{ msg }}
+  </div>
+  {% endfor %}
+</div>
+
+{% block content %}{% endblock %}
+
+<script>
+  document.querySelectorAll('.alert').forEach(el => {
+    setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 350); }, 4000);
+  });
+</script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

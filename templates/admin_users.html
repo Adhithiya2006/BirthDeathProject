@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+{% block title %}Manage Users{% endblock %}
+
+{% block navbar %}
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/" class="brand" style="text-decoration:none;">
+      <div class="brand-logo">⚖</div>
+      <div class="brand-name"><strong>Civil Registry</strong><span>Admin Panel</span></div>
+    </a>
+    <div class="nav-links">
+      <a href="{{ url_for('admin_dashboard') }}">Dashboard</a>
+      <a href="{{ url_for('admin_users') }}" class="active">Manage Users</a>
+      <a href="{{ url_for('logout') }}" class="nav-logout">Logout</a>
+    </div>
+  </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-hero">
+  <div class="page-hero-inner">
+    <div>
+      <h1>Manage Users</h1>
+      <p>Add admin, officer, or hospital accounts and manage all users</p>
+    </div>
+    <button onclick="openAddModal()" class="btn btn-ghost-white">+ Add New Account</button>
+  </div>
+</div>
+
+<div class="wrap" style="padding-top:0;">
+
+  <div class="stat-row">
+    <div class="stat"><div class="stat-num">{{ users|selectattr('role','eq','citizen')|list|length }}</div><div class="stat-lbl">Citizens</div></div>
+    <div class="stat green"><div class="stat-num">{{ users|selectattr('role','eq','officer')|list|length }}</div><div class="stat-lbl">Officers</div></div>
+    <div class="stat navy"><div class="stat-num">{{ users|selectattr('role','eq','admin')|list|length }}</div><div class="stat-lbl">Admins</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><h2>All Users</h2></div>
+    <div class="card-body-flush">
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th>ID</th><th>Name</th><th>Email</th><th>Phone</th>
+            <th>Role</th><th>Status</th><th>Joined</th><th>Actions</th>
+          </tr></thead>
+          <tbody>
+          {% for u in users %}
+          <tr>
+            <td style="color:var(--muted);">#{{ u.id }}</td>
+            <td><strong>{{ u.name }}</strong></td>
+            <td>{{ u.email }}</td>
+            <td>{{ u.phone }}</td>
+            <td>
+              <span class="badge {% if u.role=='admin' %}badge-Approved{% elif u.role=='officer' %}badge-Pending{% elif u.role=='hospital' %}badge-Pending{% else %}badge-Approved{% endif %}">
+                {{ u.role }}
+              </span>
+            </td>
+            <td>
+              <span class="badge {{ 'badge-Approved' if u.is_active else 'badge-Rejected' }}">
+                {{ 'Active' if u.is_active else 'Inactive' }}
+              </span>
+            </td>
+            <td>{{ u.created_at.strftime('%d %b %Y') }}</td>
+            <td>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                {% if u.id != session.user_id %}
+                <form method="POST" action="{{ url_for('change_role', uid=u.id) }}">
+                  <select name="role" class="fc" style="padding:4px 8px;font-size:12px;width:auto;" onchange="this.form.submit()">
+                    {% for r in ['citizen','officer','admin'] %}
+                    <option value="{{ r }}" {{ 'selected' if u.role==r }}>{{ r }}</option>
+                    {% endfor %}
+                  </select>
+                </form>
+                <form method="POST" action="{{ url_for('toggle_user', uid=u.id) }}">
+                  <button type="submit" class="btn btn-sm {{ 'btn-danger' if u.is_active else 'btn-success' }}">
+                    {{ 'Deactivate' if u.is_active else 'Activate' }}
+                  </button>
+                </form>
+                {% else %}
+                <span style="font-size:12px;color:var(--muted);">Current user</span>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add User Modal -->
+<div class="modal-bg" id="addModal">
+  <div class="modal-box">
+    <h3>Add New Account</h3>
+    <p>Create admin, officer, or hospital account.</p>
+    <form method="POST" action="{{ url_for('add_admin') }}">
+      <div class="fg" style="margin-bottom:14px;">
+        <label>Full Name / Hospital Name <span class="req">*</span></label>
+        <input type="text" name="name" class="fc" placeholder="Full name or hospital name" required>
+      </div>
+      <div class="fg" style="margin-bottom:14px;">
+        <label>Email <span class="req">*</span></label>
+        <input type="email" name="email" class="fc" placeholder="email@example.com" required>
+      </div>
+      <div class="fgrid" style="margin-bottom:14px;">
+        <div class="fg">
+          <label>Phone <span class="req">*</span></label>
+          <input type="tel" name="phone" class="fc" pattern="[0-9]{10}" maxlength="10" placeholder="10 digits" required>
+        </div>
+        <div class="fg">
+          <label>Role <span class="req">*</span></label>
+          <select name="role" class="fc" required>
+            <option value="officer">Officer</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+      </div>
+      <div class="fg" style="margin-bottom:20px;">
+        <label>Password <span class="req">*</span></label>
+        <div style="position:relative;">
+          <input type="password" name="password" id="adminPw" class="fc" placeholder="Min 6 characters" required minlength="6" style="padding-right:44px;">
+          <button type="button" onclick="togglePw('adminPw','eyeAdmin')" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:17px;color:var(--muted);padding:0;" id="eyeAdmin">👁</button>
+        </div>
+      </div>
+      <div style="display:flex;gap:12px;">
+        <button type="submit" class="btn btn-primary">Create Account</button>
+        <button type="button" onclick="closeAddModal()" class="btn btn-ghost">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function openAddModal()  { document.getElementById('addModal').classList.add('open'); }
+function closeAddModal() { document.getElementById('addModal').classList.remove('open'); }
+document.getElementById('addModal').addEventListener('click',function(e){ if(e.target===this) closeAddModal(); });
+function togglePw(id, btnId) {
+  const input = document.getElementById(id);
+  const btn   = document.getElementById(btnId);
+  if (input.type === 'password') { input.type = 'text';     btn.textContent = '🙈'; }
+  else                           { input.type = 'password'; btn.textContent = '👁'; }
+}
+</script>
+{% endblock %}

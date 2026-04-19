@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% block title %}Hospital Dashboard{% endblock %}
+
+{% block navbar %}
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/" class="brand" style="text-decoration:none;">
+      <div class="brand-logo">🏥</div>
+      <div class="brand-name"><strong>Civil Registry</strong><span>Hospital Portal</span></div>
+    </a>
+    <div class="nav-links">
+      <a href="{{ url_for('hospital_dashboard') }}" class="active">Dashboard</a>
+      <a href="{{ url_for('hospital_upload_birth') }}">Upload Birth Proof</a>
+      <a href="{{ url_for('hospital_upload_death') }}">Upload Death Proof</a>
+      <a href="{{ url_for('logout') }}" class="nav-logout">Logout</a>
+    </div>
+  </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-hero">
+  <div class="page-hero-inner">
+    <div>
+      <h1>Hospital Dashboard</h1>
+      <p>{{ session.user_name }} — Upload doctor proof documents for birth and death registrations</p>
+    </div>
+  </div>
+</div>
+
+<div class="wrap" style="padding-top:0;">
+
+  <div class="action-row">
+    <a href="{{ url_for('hospital_upload_birth') }}" class="action-card">
+      <div class="ac-icon">👶</div>
+      <h3>Upload Birth Proof</h3>
+      <p>Upload doctor's birth certificate for a registration</p>
+    </a>
+    <a href="{{ url_for('hospital_upload_death') }}" class="action-card death">
+      <div class="ac-icon">📋</div>
+      <h3>Upload Death Proof</h3>
+      <p>Upload doctor's death certificate for a registration</p>
+    </a>
+  </div>
+
+  <!-- Recent Uploads -->
+  <div class="card">
+    <div class="card-head"><h2>Recent Uploads by This Hospital</h2></div>
+    <div class="card-body-flush">
+      {% if uploads %}
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th>Type</th><th>Registration ID</th><th>Name</th>
+            <th>Document</th><th>Uploaded</th><th>Status</th>
+          </tr></thead>
+          <tbody>
+          {% for u in uploads %}
+          <tr>
+            <td><span class="badge {{ 'badge-Approved' if u.reg_type=='birth' else 'badge-Pending' }}">{{ u.reg_type|capitalize }}</span></td>
+            <td>#{{ u.reg_id }}</td>
+            <td><strong>{{ u.name }}</strong></td>
+            <td style="color:var(--teal);">📄 {{ u.proof_original_name }}</td>
+            <td>{{ u.uploaded_at.strftime('%d %b %Y, %I:%M %p') }}</td>
+            <td><span class="badge badge-{{ u.verification_status.replace(' ','') if u.verification_status else 'Pending' }}">{{ u.verification_status or 'Pending Verification' }}</span></td>
+          </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div style="padding:40px;text-align:center;color:var(--muted);">
+        <div style="font-size:36px;margin-bottom:10px;">📄</div>
+        <p>No uploads yet. Upload a proof document to get started.</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}

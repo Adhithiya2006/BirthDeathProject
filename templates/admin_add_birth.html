@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% block title %}Add Birth Registration{% endblock %}
+
+{% block navbar %}
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/" class="brand" style="text-decoration:none;">
+      <div class="brand-logo">⚖</div>
+      <div class="brand-name"><strong>Civil Registry</strong><span>Admin Panel</span></div>
+    </a>
+    <div class="nav-links">
+      <a href="{{ url_for('admin_dashboard') }}">Dashboard</a>
+      <a href="{{ url_for('admin_users') }}">Manage Users</a>
+      <a href="{{ url_for('logout') }}" class="nav-logout">Logout</a>
+    </div>
+  </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-hero">
+  <div class="page-hero-inner">
+    <div>
+      <h1>Add Birth Registration</h1>
+      <p>Create a new birth registration directly as admin/officer</p>
+    </div>
+    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-ghost-white">← Back</a>
+  </div>
+</div>
+
+<div class="wrap-narrow" style="padding-top:0;">
+  <form method="POST" enctype="multipart/form-data">
+
+    <div class="form-block">
+      <div class="form-block-head">👶 Child Information</div>
+      <div class="form-block-body">
+        <div class="fgrid" style="margin-bottom:18px;">
+          <div class="fg">
+            <label>Child's Full Name <span class="req">*</span></label>
+            <input type="text" name="child_name" class="fc" placeholder="As to appear on certificate" required>
+          </div>
+          <div class="fg">
+            <label>Gender <span class="req">*</span></label>
+            <select name="gender" class="fc" required>
+              <option value="">Select Gender</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="fgrid">
+          <div class="fg">
+            <label>Date of Birth <span class="req">*</span></label>
+            <input type="date" name="dob" class="fc" required>
+          </div>
+          <div class="fg">
+            <label>Place of Birth <span class="req">*</span></label>
+            <input type="text" name="place" class="fc" placeholder="Hospital / Village / City" required>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-block">
+      <div class="form-block-head">👨‍👩‍👦 Parents' Information</div>
+      <div class="form-block-body">
+        <div class="fgrid" style="margin-bottom:18px;">
+          <div class="fg">
+            <label>Father's Full Name <span class="req">*</span></label>
+            <input type="text" name="father" class="fc" required>
+          </div>
+          <div class="fg">
+            <label>Mother's Full Name <span class="req">*</span></label>
+            <input type="text" name="mother" class="fc" required>
+          </div>
+        </div>
+        <div class="fg">
+          <label>Permanent Address <span class="req">*</span></label>
+          <textarea name="address" class="fc" placeholder="House No., Street, City, State, PIN" required></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-block">
+      <div class="form-block-head">📧 Contact Details</div>
+      <div class="form-block-body">
+        <div class="fgrid">
+          <div class="fg">
+            <label>Contact Email <span class="req">*</span></label>
+            <input type="email" name="contact_email" class="fc" placeholder="parent@example.com" required>
+          </div>
+          <div class="fg">
+            <label>Contact Phone <span class="req">*</span></label>
+            <input type="tel" name="contact_phone" class="fc" pattern="[0-9]{10}" maxlength="10" placeholder="10 digits" required>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-block">
+      <div class="form-block-head">📄 Proof Document</div>
+      <div class="form-block-body">
+        <div class="fg">
+          <label>Upload Proof <span style="font-size:11px;color:var(--muted);font-weight:400;">(PDF, JPG, PNG — required)</span></label>
+          <input type="file" name="proof_doc" class="fc" accept=".pdf,.jpg,.jpeg,.png" required>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:12px;margin-bottom:48px;">
+      <button type="submit" class="btn btn-primary">📤 Add Birth Registration</button>
+      <a href="{{ url_for('admin_dashboard') }}" class="btn btn-ghost">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

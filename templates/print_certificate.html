@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ reg_type|capitalize }} Certificate — {{ record.certificate_no }}</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Source+Sans+3:wght@400;500;600&display=swap');
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Source Sans 3', sans-serif;
+      background: #f0f0f0;
+      padding: 20px;
+    }
+
+    .print-btn-bar {
+      max-width: 780px; margin: 0 auto 20px;
+      display: flex; gap: 12px; align-items: center;
+    }
+    .btn {
+      padding: 9px 22px; border-radius: 8px; font-size: 14px;
+      font-weight: 600; cursor: pointer; border: none;
+      font-family: inherit; text-decoration: none;
+      display: inline-flex; align-items: center; gap: 7px;
+    }
+    .btn-primary { background: #0e7490; color: #fff; }
+    .btn-primary:hover { background: #0891b2; }
+    .btn-ghost { background: #fff; color: #0e7490; border: 1.5px solid #0e7490; }
+    .btn-ghost:hover { background: #f0f9ff; }
+
+    /* Certificate */
+    .cert-wrap {
+      max-width: 780px; margin: 0 auto;
+      background: #fff;
+      border: 8px solid #1a3a5c;
+      border-radius: 4px;
+      position: relative;
+      padding: 0;
+      box-shadow: 0 8px 32px rgba(0,0,0,.18);
+    }
+    .cert-wrap::before {
+      content: '';
+      position: absolute; inset: 10px;
+      border: 2px solid #b45309;
+      border-radius: 2px;
+      pointer-events: none;
+    }
+
+    /* Header */
+    .cert-header {
+      background: linear-gradient(135deg, #1a3a5c 0%, #0e7490 100%);
+      padding: 28px 40px 22px;
+      text-align: center;
+      color: #fff;
+    }
+    .cert-header .emblem {
+      font-size: 42px; margin-bottom: 10px; display: block;
+    }
+    .cert-header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px; font-weight: 700; letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+    .cert-header h2 {
+      font-size: 13px; font-weight: 400; opacity: .7;
+      letter-spacing: 3px; text-transform: uppercase; margin-top: 4px;
+    }
+
+    /* Title bar */
+    .cert-title {
+      text-align: center; padding: 18px 40px 10px;
+      border-bottom: 2px solid #f0f0f0;
+    }
+    .cert-title h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 28px; color: #1a3a5c; letter-spacing: 1px;
+    }
+    .cert-no {
+      font-size: 13px; color: #b45309; font-weight: 600;
+      margin-top: 6px; letter-spacing: .5px;
+    }
+
+    /* Body */
+    .cert-body { padding: 24px 40px; }
+    .cert-intro {
+      text-align: center; font-size: 14px; color: #555;
+      margin-bottom: 24px; font-style: italic; line-height: 1.7;
+    }
+
+    .cert-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
+    .cert-table tr { border-bottom: 1px solid #f0f0f0; }
+    .cert-table tr:last-child { border-bottom: none; }
+    .cert-table td {
+      padding: 9px 12px; font-size: 14px; vertical-align: top;
+    }
+    .cert-table td:first-child {
+      width: 38%; font-weight: 600; color: #1a3a5c;
+      font-size: 12.5px; text-transform: uppercase; letter-spacing: .4px;
+    }
+    .cert-table td:last-child { color: #2d3e50; }
+
+    /* Footer */
+    .cert-footer {
+      display: flex; align-items: flex-end; justify-content: space-between;
+      padding: 16px 40px 28px;
+      border-top: 2px solid #b45309;
+      gap: 20px;
+    }
+    .sig-block { flex: 1; }
+    .sig-line {
+      width: 180px; border-bottom: 2px solid #1a3a5c; margin-bottom: 6px;
+    }
+    .sig-label { font-size: 12px; color: #777; font-weight: 600; }
+
+    .qr-block { text-align: center; }
+    .qr-block #qrcode canvas,
+    .qr-block #qrcode img { border: 4px solid #fff; box-shadow: 0 2px 8px rgba(0,0,0,.12); }
+    .qr-label { font-size: 10px; color: #999; margin-top: 5px; }
+
+    .cert-stamp {
+      text-align: center; padding: 0 40px 20px;
+      font-size: 11px; color: #aaa; line-height: 1.6;
+    }
+
+    /* Print styles */
+    @media print {
+      body { background: #fff; padding: 0; }
+      .print-btn-bar { display: none !important; }
+      .cert-wrap {
+        box-shadow: none; max-width: 100%;
+        border-radius: 0;
+      }
+      @page { margin: 0.5cm; size: A4; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Action buttons (hidden on print) -->
+<div class="print-btn-bar">
+  <button class="btn btn-primary" onclick="window.print()">🖨 Print Certificate</button>
+  <a href="{{ url_for('download_birth_cert' if reg_type=='birth' else 'download_death_cert', rid=record.id) }}"
+     class="btn btn-ghost">⬇ Download PDF</a>
+  <a href="{{ url_for('dashboard') }}" class="btn btn-ghost">← Back</a>
+</div>
+
+<!-- Certificate -->
+<div class="cert-wrap">
+
+  <!-- Header -->
+  <div class="cert-header">
+    <span class="emblem">⚖</span>
+    <h1>Government of Tamil Nadu</h1>
+    <h2>Civil Registration System</h2>
+  </div>
+
+  <!-- Title -->
+  <div class="cert-title">
+    <h3>{{ 'Birth' if reg_type=='birth' else 'Death' }} Certificate</h3>
+    <div class="cert-no">Certificate No: {{ record.certificate_no }}</div>
+  </div>
+
+  <!-- Body -->
+  <div class="cert-body">
+    <p class="cert-intro">
+      This is to certify that the following
+      {{ 'birth' if reg_type=='birth' else 'death' }}
+      has been duly registered under the<br>
+      Registration of Births and Deaths Act.
+    </p>
+
+    <table class="cert-table">
+      {% if reg_type == 'birth' %}
+      <tr><td>Child's Full Name</td><td>{{ record.child_name }}</td></tr>
+      <tr><td>Gender</td><td>{{ record.gender }}</td></tr>
+      <tr><td>Date of Birth</td><td>{{ record.date_of_birth }}</td></tr>
+      <tr><td>Place of Birth</td><td>{{ record.place_of_birth }}</td></tr>
+      <tr><td>Father's Name</td><td>{{ record.father_name }}</td></tr>
+      <tr><td>Mother's Name</td><td>{{ record.mother_name }}</td></tr>
+      <tr><td>Doctor's Name</td><td>{{ record.doctor_name or 'N/A' }}</td></tr>
+      <tr><td>Hospital / Clinic</td><td>{{ record.hospital_name or 'N/A' }}</td></tr>
+      <tr><td>Address</td><td>{{ record.address }}</td></tr>
+      {% else %}
+      <tr><td>Deceased's Name</td><td>{{ record.deceased_name }}</td></tr>
+      <tr><td>Gender</td><td>{{ record.gender }}</td></tr>
+      <tr><td>Date of Death</td><td>{{ record.date_of_death }}</td></tr>
+      <tr><td>Place of Death</td><td>{{ record.place_of_death }}</td></tr>
+      <tr><td>Cause of Death</td><td>{{ record.cause_of_death }}</td></tr>
+      <tr><td>Father's Name</td><td>{{ record.father_name }}</td></tr>
+      <tr><td>Mother's Name</td><td>{{ record.mother_name }}</td></tr>
+      {% if record.spouse_name %}<tr><td>Spouse's Name</td><td>{{ record.spouse_name }}</td></tr>{% endif %}
+      <tr><td>Doctor's Name</td><td>{{ record.doctor_name or 'N/A' }}</td></tr>
+      <tr><td>Hospital / Clinic</td><td>{{ record.hospital_name or 'N/A' }}</td></tr>
+      <tr><td>Informant</td><td>{{ record.informant_name }} ({{ record.informant_relation }})</td></tr>
+      <tr><td>Address</td><td>{{ record.address }}</td></tr>
+      {% endif %}
+      <tr><td>Approval Date</td><td>{{ record.approved_at.strftime('%d %B %Y') if record.approved_at else 'N/A' }}</td></tr>
+    </table>
+  </div>
+
+  <!-- Footer -->
+  <div class="cert-footer">
+    <div class="sig-block">
+      <div class="sig-line"></div>
+      <div class="sig-label">Registrar's Signature</div>
+      <div style="font-size:12px;color:#555;margin-top:4px;">District Registrar Office</div>
+      <div style="font-size:12px;color:#555;">Tamil Nadu, India</div>
+    </div>
+
+    <div class="qr-block">
+      <div id="qrcode"></div>
+      <div class="qr-label">Scan to verify online</div>
+    </div>
+  </div>
+
+  <!-- Stamp -->
+  <div class="cert-stamp">
+    This is a computer-generated certificate issued by the Civil Registry System, Government of Tamil Nadu.<br>
+    Generated on: {{ now }} &nbsp;|&nbsp; Verify at: http://127.0.0.1:5000/verify
+  </div>
+
+</div>
+
+<script>
+new QRCode(document.getElementById("qrcode"), {
+  text: "{{ verify_url }}",
+  width: 90,
+  height: 90,
+  colorDark: "#1a3a5c",
+  colorLight: "#ffffff",
+  correctLevel: QRCode.CorrectLevel.M
+});
+</script>
+</body>
+</html>

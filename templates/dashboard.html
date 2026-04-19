@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+{% block title %}My Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-hero">
+  <div class="page-hero-inner">
+    <div>
+      <h1>Welcome, {{ session.user_name }}</h1>
+      <p>Manage your birth and death registration applications</p>
+    </div>
+  </div>
+</div>
+
+<div class="wrap" style="padding-top:0;">
+
+  <div class="action-row">
+    <a href="{{ url_for('birth') }}" class="action-card">
+      <div class="ac-icon">👶</div>
+      <h3>Register a Birth</h3>
+      <p>Submit a new birth registration for approval</p>
+    </a>
+    <a href="{{ url_for('death') }}" class="action-card death">
+      <div class="ac-icon">📜</div>
+      <h3>Register a Death</h3>
+      <p>Submit a death registration for approval</p>
+    </a>
+  </div>
+
+  <!-- Birth Registrations -->
+  <div class="card" style="margin-bottom:24px;">
+    <div class="card-head">
+      <h2>Birth Registrations</h2>
+      <a href="{{ url_for('birth') }}" class="btn btn-primary btn-sm">+ New</a>
+    </div>
+    <div class="card-body-flush">
+      {% if births %}
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th>ID</th><th>Child Name</th><th>Status</th>
+            <th>Certificate No.</th><th>Submitted</th><th>Actions</th>
+          </tr></thead>
+          <tbody>
+          {% for b in births %}
+          <tr>
+            <td style="color:var(--muted);">#{{ b.id }}</td>
+            <td><strong>{{ b.child_name }}</strong></td>
+            <td>
+              <span class="badge badge-{{ b.status }}">{{ b.status }}</span>
+              {% if b.status == 'Rejected' and b.rejection_reason %}
+              <div style="font-size:11.5px;color:var(--danger);margin-top:3px;">⚠ {{ b.rejection_reason }}</div>
+              {% endif %}
+            </td>
+            <td>{{ b.certificate_no or '—' }}</td>
+            <td>{{ b.submitted_at.strftime('%d %b %Y') }}</td>
+            <td>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+                {% if b.status == 'Approved' %}
+                  <a href="{{ url_for('download_birth_cert', rid=b.id) }}" class="btn btn-success btn-sm">⬇ Download</a>
+                  <a href="{{ url_for('print_birth_cert', rid=b.id) }}" class="btn btn-primary btn-sm" target="_blank">🖨 Print</a>
+                {% elif b.status == 'Pending' %}
+                  <a href="{{ url_for('edit_birth', rid=b.id) }}" class="btn btn-ghost btn-sm">✏ Edit</a>
+                  <form method="POST" action="{{ url_for('delete_birth', rid=b.id) }}"
+                        onsubmit="return confirm('Delete this birth registration?')">
+                    <button type="submit" class="btn btn-danger btn-sm">🗑 Delete</button>
+                  </form>
+                {% elif b.status == 'Rejected' %}
+                  <a href="{{ url_for('edit_birth', rid=b.id) }}" class="btn btn-ghost btn-sm">✏ Edit & Resubmit</a>
+                  <form method="POST" action="{{ url_for('delete_birth', rid=b.id) }}"
+                        onsubmit="return confirm('Delete this birth registration?')">
+                    <button type="submit" class="btn btn-danger btn-sm">🗑 Delete</button>
+                  </form>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div style="padding:40px;text-align:center;color:var(--muted);">
+        <div style="font-size:36px;margin-bottom:10px;">👶</div>
+        <p>No birth registrations yet.</p>
+        <a href="{{ url_for('birth') }}" class="btn btn-primary" style="margin-top:14px;">Register a Birth</a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Death Registrations -->
+  <div class="card">
+    <div class="card-head">
+      <h2>Death Registrations</h2>
+      <a href="{{ url_for('death') }}" class="btn btn-navy btn-sm">+ New</a>
+    </div>
+    <div class="card-body-flush">
+      {% if deaths %}
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th>ID</th><th>Deceased Name</th><th>Status</th>
+            <th>Certificate No.</th><th>Submitted</th><th>Actions</th>
+          </tr></thead>
+          <tbody>
+          {% for d in deaths %}
+          <tr>
+            <td style="color:var(--muted);">#{{ d.id }}</td>
+            <td><strong>{{ d.deceased_name }}</strong></td>
+            <td>
+              <span class="badge badge-{{ d.status }}">{{ d.status }}</span>
+              {% if d.status == 'Rejected' and d.rejection_reason %}
+              <div style="font-size:11.5px;color:var(--danger);margin-top:3px;">⚠ {{ d.rejection_reason }}</div>
+              {% endif %}
+            </td>
+            <td>{{ d.certificate_no or '—' }}</td>
+            <td>{{ d.submitted_at.strftime('%d %b %Y') }}</td>
+            <td>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+                {% if d.status == 'Approved' %}
+                  <a href="{{ url_for('download_death_cert', rid=d.id) }}" class="btn btn-success btn-sm">⬇ Download</a>
+                  <a href="{{ url_for('print_death_cert', rid=d.id) }}" class="btn btn-primary btn-sm" target="_blank">🖨 Print</a>
+                {% elif d.status == 'Pending' %}
+                  <a href="{{ url_for('edit_death', rid=d.id) }}" class="btn btn-ghost btn-sm">✏ Edit</a>
+                  <form method="POST" action="{{ url_for('delete_death', rid=d.id) }}"
+                        onsubmit="return confirm('Delete this death registration?')">
+                    <button type="submit" class="btn btn-danger btn-sm">🗑 Delete</button>
+                  </form>
+                {% elif d.status == 'Rejected' %}
+                  <a href="{{ url_for('edit_death', rid=d.id) }}" class="btn btn-ghost btn-sm">✏ Edit & Resubmit</a>
+                  <form method="POST" action="{{ url_for('delete_death', rid=d.id) }}"
+                        onsubmit="return confirm('Delete this death registration?')">
+                    <button type="submit" class="btn btn-danger btn-sm">🗑 Delete</button>
+                  </form>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div style="padding:40px;text-align:center;color:var(--muted);">
+        <div style="font-size:36px;margin-bottom:10px;">📜</div>
+        <p>No death registrations yet.</p>
+        <a href="{{ url_for('death') }}" class="btn btn-navy" style="margin-top:14px;">Register a Death</a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}

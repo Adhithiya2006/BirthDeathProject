@@ -1,0 +1,294 @@
+{% extends 'base.html' %}
+{% block title %}Admin Panel{% endblock %}
+
+{% block navbar %}
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/" class="brand" style="text-decoration:none;">
+      <div class="brand-logo">⚖</div>
+      <div class="brand-name">
+        <strong>Civil Registry</strong>
+        <span>Admin / Officer Panel</span>
+      </div>
+    </a>
+    <div class="nav-links">
+      <a href="{{ url_for('admin_dashboard') }}" class="active">Dashboard</a>
+      <a href="{{ url_for('admin_users') }}">Manage Users</a>
+      <a href="{{ url_for('logout') }}" class="nav-logout">Logout</a>
+    </div>
+  </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-hero">
+  <div class="page-hero-inner">
+    <div>
+      <h1>Administrative Dashboard</h1>
+      <p>Review and process birth &amp; death registration applications</p>
+    </div>
+    <div style="font-size:13px;color:rgba(255,255,255,.6);">
+      Logged in as: <strong style="color:#fff;">{{ session.user_name }}</strong>
+      <span style="background:rgba(255,255,255,.15);padding:2px 9px;border-radius:12px;margin-left:6px;font-size:11px;text-transform:uppercase;letter-spacing:.5px;">{{ session.role }}</span>
+    </div>
+  </div>
+</div>
+
+<div class="wrap" style="padding-top:0;">
+
+  <!-- Quick Add Actions -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px;">
+    <a href="{{ url_for('admin_add_birth') }}" style="display:flex;align-items:center;gap:14px;background:#fff;border:1.5px solid var(--border);border-left:5px solid var(--teal);border-radius:var(--r);padding:18px 22px;text-decoration:none;color:var(--ink);transition:all .2s;" onmouseover="this.style.boxShadow='0 4px 16px rgba(0,0,0,.1)'" onmouseout="this.style.boxShadow='none'">
+      <span style="font-size:28px;">👶</span>
+      <div>
+        <div style="font-weight:700;font-size:15px;color:var(--teal);">+ Add Birth Registration</div>
+        <div style="font-size:12.5px;color:var(--muted);margin-top:2px;">Create a new birth record directly</div>
+      </div>
+    </a>
+    <a href="{{ url_for('admin_add_death') }}" style="display:flex;align-items:center;gap:14px;background:#fff;border:1.5px solid var(--border);border-left:5px solid var(--navy);border-radius:var(--r);padding:18px 22px;text-decoration:none;color:var(--ink);transition:all .2s;" onmouseover="this.style.boxShadow='0 4px 16px rgba(0,0,0,.1)'" onmouseout="this.style.boxShadow='none'">
+      <span style="font-size:28px;">📜</span>
+      <div>
+        <div style="font-weight:700;font-size:15px;color:var(--navy);">+ Add Death Registration</div>
+        <div style="font-size:12.5px;color:var(--muted);margin-top:2px;">Create a new death record directly</div>
+      </div>
+    </a>
+  </div>
+
+  <!-- Stats -->
+  <div class="stat-row">
+    <div class="stat">
+      <div class="stat-num">{{ pending_births }}</div>
+      <div class="stat-lbl">Birth — Pending</div>
+    </div>
+    <div class="stat gold">
+      <div class="stat-num">{{ pending_deaths }}</div>
+      <div class="stat-lbl">Death — Pending</div>
+    </div>
+    <div class="stat green">
+      <div class="stat-num">{{ approved_births }}</div>
+      <div class="stat-lbl">Births Approved</div>
+    </div>
+    <div class="stat navy">
+      <div class="stat-num">{{ approved_deaths }}</div>
+      <div class="stat-lbl">Deaths Approved</div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="card">
+    <div class="card-body">
+      <div class="tab-bar">
+        <button class="tab-btn active" onclick="switchTab('tb-pb',this)">
+          Pending Births
+          {% if pending_births %}<span style="background:var(--danger);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px;margin-left:5px;">{{ pending_births }}</span>{% endif %}
+        </button>
+        <button class="tab-btn" onclick="switchTab('tb-pd',this)">
+          Pending Deaths
+          {% if pending_deaths %}<span style="background:var(--danger);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px;margin-left:5px;">{{ pending_deaths }}</span>{% endif %}
+        </button>
+        <button class="tab-btn" onclick="switchTab('tb-ab',this)">All Births</button>
+        <button class="tab-btn" onclick="switchTab('tb-ad',this)">All Deaths</button>
+      </div>
+
+      <!-- Pending Births -->
+      <div id="tb-pb" class="tab-pane active">
+        {% if pending_birth_list %}
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr>
+              <th>ID</th><th>Child Name</th><th>DOB</th>
+              <th>Citizen</th><th>Phone</th><th>Submitted</th><th>Actions</th>
+            </tr></thead>
+            <tbody>
+            {% for b in pending_birth_list %}
+            <tr>
+              <td style="color:var(--muted);">#{{ b.id }}</td>
+              <td>
+                <a href="{{ url_for('admin_view_birth', rid=b.id) }}" style="font-weight:600;color:var(--teal);">{{ b.child_name }}</a>
+              </td>
+              <td>{{ b.date_of_birth }}</td>
+              <td>{{ b.citizen_name }}</td>
+              <td>{{ b.citizen_phone }}</td>
+              <td>{{ b.submitted_at.strftime('%d %b %Y') }}</td>
+              <td>
+                <div style="display:flex;gap:6px;">
+                  <button class="btn btn-success btn-sm" onclick="openModal('birth',{{ b.id }},'approve')">✓ Approve</button>
+                  <button class="btn btn-danger btn-sm"  onclick="openModal('birth',{{ b.id }},'reject')">✗ Reject</button>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div style="text-align:center;padding:48px;color:var(--muted);">
+          <div style="font-size:36px;margin-bottom:10px;">✅</div>
+          <p>No pending birth registrations.</p>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Pending Deaths -->
+      <div id="tb-pd" class="tab-pane">
+        {% if pending_death_list %}
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr>
+              <th>ID</th><th>Deceased Name</th><th>Date of Death</th>
+              <th>Citizen</th><th>Phone</th><th>Submitted</th><th>Actions</th>
+            </tr></thead>
+            <tbody>
+            {% for d in pending_death_list %}
+            <tr>
+              <td style="color:var(--muted);">#{{ d.id }}</td>
+              <td>
+                <a href="{{ url_for('admin_view_death', rid=d.id) }}" style="font-weight:600;color:var(--teal);">{{ d.deceased_name }}</a>
+              </td>
+              <td>{{ d.date_of_death }}</td>
+              <td>{{ d.citizen_name }}</td>
+              <td>{{ d.citizen_phone }}</td>
+              <td>{{ d.submitted_at.strftime('%d %b %Y') }}</td>
+              <td>
+                <div style="display:flex;gap:6px;">
+                  <button class="btn btn-success btn-sm" onclick="openModal('death',{{ d.id }},'approve')">✓ Approve</button>
+                  <button class="btn btn-danger btn-sm"  onclick="openModal('death',{{ d.id }},'reject')">✗ Reject</button>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div style="text-align:center;padding:48px;color:var(--muted);">
+          <div style="font-size:36px;margin-bottom:10px;">✅</div>
+          <p>No pending death registrations.</p>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- All Births -->
+      <div id="tb-ab" class="tab-pane">
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>ID</th><th>Child Name</th><th>Status</th><th>Certificate No.</th><th>Citizen</th><th>Submitted</th><th></th></tr></thead>
+            <tbody>
+            {% for b in all_births %}
+            <tr>
+              <td style="color:var(--muted);">#{{ b.id }}</td>
+              <td>{{ b.child_name }}</td>
+              <td><span class="badge badge-{{ b.status }}">{{ b.status }}</span></td>
+              <td>{{ b.certificate_no or '—' }}</td>
+              <td>{{ b.citizen_name }}</td>
+              <td>{{ b.submitted_at.strftime('%d %b %Y') }}</td>
+              <td>
+                <div style="display:flex;gap:6px;">
+                  <a href="{{ url_for('admin_view_birth', rid=b.id) }}" class="btn btn-ghost btn-sm">View</a>
+                  <form method="POST" action="{{ url_for('admin_delete_birth', rid=b.id) }}"
+                        onsubmit="return confirm('Permanently delete this record?')">
+                    <button type="submit" class="btn btn-danger btn-sm">🗑</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- All Deaths -->
+      <div id="tb-ad" class="tab-pane">
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>ID</th><th>Deceased Name</th><th>Status</th><th>Certificate No.</th><th>Citizen</th><th>Submitted</th><th></th></tr></thead>
+            <tbody>
+            {% for d in all_deaths %}
+            <tr>
+              <td style="color:var(--muted);">#{{ d.id }}</td>
+              <td>{{ d.deceased_name }}</td>
+              <td><span class="badge badge-{{ d.status }}">{{ d.status }}</span></td>
+              <td>{{ d.certificate_no or '—' }}</td>
+              <td>{{ d.citizen_name }}</td>
+              <td>{{ d.submitted_at.strftime('%d %b %Y') }}</td>
+              <td>
+                <div style="display:flex;gap:6px;">
+                  <a href="{{ url_for('admin_view_death', rid=d.id) }}" class="btn btn-ghost btn-sm">View</a>
+                  <form method="POST" action="{{ url_for('admin_delete_death', rid=d.id) }}"
+                        onsubmit="return confirm('Permanently delete this record?')">
+                    <button type="submit" class="btn btn-danger btn-sm">🗑</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Approve / Reject Modal -->
+<div class="modal-bg" id="actionModal">
+  <div class="modal-box">
+    <h3 id="mTitle">Confirm Action</h3>
+    <p id="mDesc"></p>
+    <form id="mForm" method="POST">
+      <input type="hidden" name="action" id="mAction">
+      <div id="reasonWrap" style="display:none;margin-bottom:18px;">
+        <label style="display:block;margin-bottom:6px;">Rejection Reason <span class="req">*</span></label>
+        <textarea name="reason" class="fc" rows="3" placeholder="Explain why this application is being rejected…"></textarea>
+      </div>
+      <div style="display:flex;gap:12px;">
+        <button type="submit" id="mSubmit" class="btn btn-primary">Confirm</button>
+        <button type="button" onclick="closeModal()" class="btn btn-ghost">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+
+function openModal(type, id, action) {
+  const form = document.getElementById('mForm');
+  form.action = `/admin/approve/${type}/${id}`;
+  document.getElementById('mAction').value = action;
+  const rw = document.getElementById('reasonWrap');
+  const sb = document.getElementById('mSubmit');
+  if (action === 'approve') {
+    document.getElementById('mTitle').textContent = 'Approve Registration';
+    document.getElementById('mDesc').textContent = 'Are you sure? An SMS confirmation will be sent to the applicant.';
+    rw.style.display = 'none';
+    sb.className = 'btn btn-success';
+    sb.textContent = '✓ Approve';
+  } else {
+    document.getElementById('mTitle').textContent = 'Reject Registration';
+    document.getElementById('mDesc').textContent = 'Provide a reason. The applicant will be notified via SMS and can edit and resubmit.';
+    rw.style.display = 'block';
+    sb.className = 'btn btn-danger';
+    sb.textContent = '✗ Reject';
+  }
+  document.getElementById('actionModal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('actionModal').classList.remove('open');
+}
+
+document.getElementById('actionModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+</script>
+{% endblock %}
